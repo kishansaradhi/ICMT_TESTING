@@ -754,6 +754,8 @@ button{cursor:pointer}
         <option value="id">Sort: Member ID</option>
         <option value="designation">Sort: Designation</option>
         <option value="state">Sort: State</option>
+        <option value="country">Sort: Country</option>
+        <option value="expertise">Sort: Expertise</option>
       </select>
     </div>
 
@@ -949,6 +951,22 @@ function setViewMode(mode){
   renderFacultyDirectory();
 }
 
+function getNormalizedExpertise(exp){
+  if(!exp) return "";
+  let list = [];
+  if(Array.isArray(exp)){
+    list = exp.map(x => String(x || "").trim()).filter(Boolean);
+  } else if(typeof exp === "string"){
+    list = exp.split(",").map(x => x.trim()).filter(Boolean);
+  } else {
+    const s = String(exp).trim();
+    if(s) list = [s];
+  }
+  if(!list.length) return "";
+  list.sort((a,b) => a.localeCompare(b, undefined, { sensitivity: "base" }));
+  return list.join(", ");
+}
+
 function renderFacultyDirectory(){
   const q = String(document.getElementById("searchInput")?.value || "").trim().toLowerCase();
   const state = document.getElementById("stateFilter")?.value || "";
@@ -997,6 +1015,17 @@ function renderFacultyDirectory(){
     }
     if(sort === "state"){
       return String(a.state || "").localeCompare(String(b.state || ""));
+    }
+    if(sort === "country"){
+      return String(a.country || "").localeCompare(String(b.country || ""));
+    }
+    if(sort === "expertise"){
+      const expA = getNormalizedExpertise(a.expertise);
+      const expB = getNormalizedExpertise(b.expertise);
+      if(!expA && !expB) return 0;
+      if(!expA) return 1;
+      if(!expB) return -1;
+      return expA.localeCompare(expB, undefined, { sensitivity: "base" });
     }
     return 0;
   });

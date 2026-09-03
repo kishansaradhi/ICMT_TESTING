@@ -122,51 +122,191 @@ function managementNormalizeName(value){
 }
 
 
-function viewManagementMember(id){
-  const member=members.find(m=>String(m.id)===String(id));
-  if(!member){ showToast("Member record not found."); return; }
+function renderMemberDetailsPage(member){
+  const content = $("memberDetailsContent");
+  const actionBtns = $("memberDetailsActionBtns");
+  if(!content) return;
 
-  const modal=$("managementViewModal");
-  const content=$("managementViewContent");
-  if(!modal || !content){ showToast("Member details view is unavailable."); return; }
-
-  const value=v=>{
-    if(v===null||v===undefined||String(v).trim()==="") return "Not specified";
-    return Array.isArray(v)?v.join(", "):String(v);
+  const val = v => {
+    if(v === null || v === undefined || String(v).trim() === "") {
+      return '<span style="color:#94a3b8;font-style:italic">Not specified</span>';
+    }
+    if(Array.isArray(v)){
+      const clean = v.map(x => String(x || "").trim()).filter(Boolean);
+      return clean.length ? esc(clean.join(", ")) : '<span style="color:#94a3b8;font-style:italic">Not specified</span>';
+    }
+    return esc(String(v).trim());
   };
-  const field=(label,v,full=false)=>
-    '<div class="management-view-field'+(full?' management-view-full':'')+'">'
-    +'<div class="label">'+esc(label)+'</div><div class="value">'+esc(value(v))+'</div></div>';
 
-  const photo=member.photo
-    ? '<img class="management-view-photo" src="'+member.photo+'" alt="Member photo">'
-    : '<div class="management-view-photo management-no-photo">No photo</div>';
+  const emailVal = v => {
+    if(!v || !String(v).trim()) return '<span style="color:#94a3b8;font-style:italic">Not specified</span>';
+    const clean = String(v).trim();
+    return '<a href="mailto:'+esc(clean)+'" style="color:var(--blue);font-weight:600;text-decoration:none">'+esc(clean)+'</a>';
+  };
 
-  content.innerHTML=
-    '<div class="management-view-header">'+photo+
-      '<div><h2 style="margin:0 0 5px">'+esc(member.name)+'</h2>'+
-      '<div class="subtitle">'+esc(member.designation||"Not specified")+' • '+esc(member.id)+'</div></div>'+
-    '</div>'+
-    '<div class="management-view-grid">'+
-      field("Member ID",member.id)+field("Name",member.name)+
-      field("Qualification",member.qualification)+field("Designation",member.designation)+
-      field("Department",member.department)+field("Institution / Organization",member.college)+
-      field("College Address",member.collegeAddress,true)+
-      field("Pincode",member.pincode)+field("Permanent Address Pincode",member.permanentPincode)+
-      field("City",member.city)+field("State / Province",member.state)+field("Country",member.country)+
-      field("Research Guideship",member.guideship,true)+field("Expertise",member.expertise,true)+
-      field("Mobile",member.mobile)+field("WhatsApp",member.whatsapp)+
-      field("Professional Email",member.professionalEmail)+field("Personal Email",member.personalEmail)+
-      field("LinkedIn",member.linkedin)+field("ORCID",member.orcid)+field("Google Scholar",member.scholar)+
+  const linkVal = (v, prefix="") => {
+    if(!v || !String(v).trim()) return '<span style="color:#94a3b8;font-style:italic">Not specified</span>';
+    let raw = String(v).trim();
+    let url = raw;
+    if(!url.startsWith("http://") && !url.startsWith("https://")){
+      url = prefix ? prefix + raw : "https://" + raw;
+    }
+    return '<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" style="color:var(--blue);font-weight:600;text-decoration:underline;word-break:break-all">'+esc(raw)+' ↗</a>';
+  };
+
+  const photoHtml = member.photo && String(member.photo).trim()
+    ? '<img src="'+member.photo+'" alt="'+esc(member.name)+'" style="width:160px;height:160px;aspect-ratio:1/1;object-fit:cover;object-position:center 15%;border-radius:14px;border:3px solid #dfe6ee;box-shadow:0 6px 18px rgba(13,53,84,0.1);display:block">'
+    : '<div style="width:160px;height:160px;aspect-ratio:1/1;border-radius:14px;background:#eef4f8;border:2px dashed #cbd5df;display:flex;align-items:center;justify-content:center;color:#667085;font-size:14px;font-weight:700">No photo</div>';
+
+  const hasPhoto = Boolean(String(member.photo || "").trim());
+  const isComplete = [
+    member.name, member.qualification, member.designation, member.department,
+    member.college, member.state, member.country, member.expertise
+  ].every(v => String(v ?? "").trim() !== "");
+
+  const statusBadge = hasPhoto
+    ? (isComplete ? '<span class="badge green" style="font-size:12px;padding:4px 10px">Complete Record</span>' : '<span class="badge" style="background:#eaf5fb;color:#126b9b;font-size:12px;padding:4px 10px">Missing Info</span>')
+    : '<span class="badge" style="background:#fff7ed;color:#9a3412;font-size:12px;padding:4px 10px">No Photo</span>';
+
+  if(actionBtns){
+    actionBtns.innerHTML =
+      '<button class="btn primary" type="button" onclick="editMember(\''+esc(member.id)+'\')">✏️ Edit Member</button>' +
+      '<button class="btn danger" type="button" style="background:#fef2f2;color:#dc2626;border-color:#fecaca" onclick="deleteMember(\''+esc(member.id)+'\')">🗑️ Delete Member</button>';
+  }
+
+  const expList = Array.isArray(member.expertise)
+    ? member.expertise.map(x => String(x || "").trim()).filter(Boolean)
+    : String(member.expertise || "").split(",").map(x => x.trim()).filter(Boolean);
+
+  const guideList = String(member.guideship || member.researchSupervisor || "").split(",").map(x => x.trim()).filter(Boolean);
+
+  content.innerHTML =
+    '<!-- Top Hero Card -->' +
+    '<div style="background:linear-gradient(135deg, #f8fbfe 0%, #eef6fb 100%);border:1px solid #dfe6ee;border-radius:14px;padding:24px;margin-bottom:24px;display:flex;gap:24px;align-items:center;flex-wrap:wrap">' +
+      '<div style="flex-shrink:0">' + photoHtml + '</div>' +
+      '<div style="flex-grow:1;min-width:280px">' +
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap">' +
+          '<span style="font-size:13px;font-weight:800;color:var(--blue);background:#eaf5fb;padding:3px 10px;border-radius:6px;border:1px solid #c9e2f3">ID: ' + esc(member.id || "Not specified") + '</span>' +
+          statusBadge +
+        '</div>' +
+        '<h1 style="font-size:26px;font-weight:800;color:var(--navy);margin:0 0 4px;letter-spacing:-0.4px">' +
+          esc(member.title ? member.title + " " : "") + esc(member.name || "Member") +
+        '</h1>' +
+        '<div style="font-size:15px;font-weight:600;color:#334155;margin-bottom:6px">' +
+          esc(member.designation || "Not specified") + ' &bull; ' + esc(member.qualification || "Not specified") +
+        '</div>' +
+        '<div style="font-size:14px;color:#64748b">' +
+          esc(member.department || "Department Not Specified") + ' &bull; <b>' + esc(member.college || "Institution Not Specified") + '</b>' +
+        '</div>' +
+        '<div style="font-size:13px;color:#64748b;margin-top:4px">' +
+          '📍 ' + esc([member.city, member.state, member.country].filter(Boolean).join(", ") || "Location Not Specified") +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+
+    '<!-- 4 Structured Information Cards Grid -->' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">' +
+
+      '<!-- 1. Basic Information -->' +
+      '<div class="panel" style="margin-bottom:0;padding:20px">' +
+        '<h3 style="font-size:15px;font-weight:700;color:var(--navy);margin:0 0 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #edf2f7;padding-bottom:10px">' +
+          '🏛️ Basic Academic Information' +
+        '</h3>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">' +
+          '<div><div class="label" style="font-size:11px">Member ID</div><div style="font-size:13.5px;color:#1e293b;font-weight:600;margin-top:2px">' + val(member.id) + '</div></div>' +
+          '<div><div class="label" style="font-size:11px">Title</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.title) + '</div></div>' +
+          '<div style="grid-column:1/-1"><div class="label" style="font-size:11px">Full Name</div><div style="font-size:14px;font-weight:700;color:#0f172a;margin-top:2px">' + val(member.name) + '</div></div>' +
+          '<div><div class="label" style="font-size:11px">Qualification</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.qualification) + '</div></div>' +
+          '<div><div class="label" style="font-size:11px">Designation</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.designation) + '</div></div>' +
+          '<div style="grid-column:1/-1"><div class="label" style="font-size:11px">Department</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.department) + '</div></div>' +
+          '<div style="grid-column:1/-1"><div class="label" style="font-size:11px">Institution / Organization</div><div style="font-size:13.5px;color:#1e293b;font-weight:600;margin-top:2px">' + val(member.college) + '</div></div>' +
+          '<div style="grid-column:1/-1"><div class="label" style="font-size:11px">College Address</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px;line-height:1.5">' + val(member.collegeAddress) + '</div></div>' +
+          '<div><div class="label" style="font-size:11px">Pincode</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.pincode) + '</div></div>' +
+          '<div><div class="label" style="font-size:11px">Permanent Address Pincode</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.permanentPincode) + '</div></div>' +
+          '<div><div class="label" style="font-size:11px">City</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.city) + '</div></div>' +
+          '<div><div class="label" style="font-size:11px">State / Province</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.state) + '</div></div>' +
+          '<div style="grid-column:1/-1"><div class="label" style="font-size:11px">Country</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.country || "India") + '</div></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- Right Column: Research + Contact + Profiles -->' +
+      '<div style="display:flex;flex-direction:column;gap:20px">' +
+
+        '<!-- 2. Research Information -->' +
+        '<div class="panel" style="margin-bottom:0;padding:20px">' +
+          '<h3 style="font-size:15px;font-weight:700;color:var(--navy);margin:0 0 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #edf2f7;padding-bottom:10px">' +
+            '🔬 Research Information' +
+          '</h3>' +
+          '<div style="display:flex;flex-direction:column;gap:14px">' +
+            '<div>' +
+              '<div class="label" style="font-size:11px">Research Guideship</div>' +
+              '<div style="font-size:13.5px;color:#1e293b;margin-top:4px">' +
+                (guideList.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">' + guideList.map(g => '<span class="badge green" style="font-size:12px;padding:3px 8px">' + esc(g) + '</span>').join("") + '</div>' : val(member.guideship)) +
+              '</div>' +
+            '</div>' +
+            '<div>' +
+              '<div class="label" style="font-size:11px">Expertise</div>' +
+              '<div style="font-size:13.5px;color:#1e293b;margin-top:4px">' +
+                (expList.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">' + expList.map(e => '<span class="badge" style="background:#eaf5fb;color:#126b9b;font-size:12px;padding:3px 8px">' + esc(e) + '</span>').join("") + '</div>' : val(member.expertise)) +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<!-- 3. Contact Information -->' +
+        '<div class="panel" style="margin-bottom:0;padding:20px">' +
+          '<h3 style="font-size:15px;font-weight:700;color:var(--navy);margin:0 0 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #edf2f7;padding-bottom:10px">' +
+            '📞 Contact Information' +
+          '</h3>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">' +
+            '<div><div class="label" style="font-size:11px">Mobile</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.mobile) + '</div></div>' +
+            '<div><div class="label" style="font-size:11px">WhatsApp</div><div style="font-size:13.5px;color:#1e293b;margin-top:2px">' + val(member.whatsapp) + '</div></div>' +
+            '<div style="grid-column:1/-1"><div class="label" style="font-size:11px">Professional Email</div><div style="font-size:13.5px;margin-top:2px">' + emailVal(member.professionalEmail || member.email) + '</div></div>' +
+            '<div style="grid-column:1/-1"><div class="label" style="font-size:11px">Personal Email</div><div style="font-size:13.5px;margin-top:2px">' + emailVal(member.personalEmail) + '</div></div>' +
+          '</div>' +
+        '</div>' +
+
+        '<!-- 4. Online Profiles -->' +
+        '<div class="panel" style="margin-bottom:0;padding:20px">' +
+          '<h3 style="font-size:15px;font-weight:700;color:var(--navy);margin:0 0 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #edf2f7;padding-bottom:10px">' +
+            '🌐 Online Profiles' +
+          '</h3>' +
+          '<div style="display:flex;flex-direction:column;gap:12px">' +
+            '<div><div class="label" style="font-size:11px">LinkedIn</div><div style="font-size:13px;margin-top:2px">' + linkVal(member.linkedin, "https://linkedin.com/in/") + '</div></div>' +
+            '<div><div class="label" style="font-size:11px">ORCID</div><div style="font-size:13px;margin-top:2px">' + linkVal(member.orcid, "https://orcid.org/") + '</div></div>' +
+            '<div><div class="label" style="font-size:11px">Google Scholar Profile</div><div style="font-size:13px;margin-top:2px">' + linkVal(member.scholar || member.googleScholar) + '</div></div>' +
+          '</div>' +
+        '</div>' +
+
+      '</div>' +
+    '</div>' +
+
+    '<!-- Bottom Navigation Bar -->' +
+    '<div style="margin-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;border-top:1px solid var(--line);padding-top:18px">' +
+      '<button class="btn secondary" type="button" onclick="showPage(\'management\')" style="font-weight:700;padding:10px 20px;font-size:13.5px">' +
+        '&larr; Back to Member Management' +
+      '</button>' +
+      '<button class="btn primary" type="button" onclick="editMember(\'' + esc(member.id) + '\')" style="font-weight:700;padding:10px 20px;font-size:13.5px">' +
+        '✏️ Edit Member Information' +
+      '</button>' +
     '</div>';
+}
 
-  modal.style.display="flex";
-  modal.setAttribute("aria-hidden","false");
+function viewManagementMember(id){
+  const member = members.find(m => String(m.id).toUpperCase() === String(id).toUpperCase() || String(m.id) === String(id));
+  if(!member){
+    showToast("Member record not found.");
+    return;
+  }
+
+  renderMemberDetailsPage(member);
+  showPage("memberDetails");
+  const mgmtBtn = document.querySelector('.nav button[data-page="management"]');
+  if(mgmtBtn) mgmtBtn.classList.add("active");
 }
 
 function closeManagementMemberView(){
-  const modal=$("managementViewModal");
-  if(modal){ modal.style.display="none"; modal.setAttribute("aria-hidden","true"); }
+  showPage("management");
 }
 
 
@@ -1332,9 +1472,11 @@ function backLogin(){
 
 const pageTitles={
   dashboard:"Dashboard",
+  management:"Member Management",
   directory:"Faculty Directory",
   add:"Add Member (Manual)",
   profile:"Member Profile",
+  memberDetails:"Member Details",
   users:"User Management"
 };
 
@@ -1617,6 +1759,22 @@ function populateDirectoryGlobalFilters(){
   }
 }
 
+function getNormalizedExpertise(exp){
+  if(!exp) return "";
+  let list=[];
+  if(Array.isArray(exp)){
+    list=exp.map(x=>String(x||"").trim()).filter(Boolean);
+  }else if(typeof exp==="string"){
+    list=exp.split(",").map(x=>x.trim()).filter(Boolean);
+  }else{
+    const s=String(exp).trim();
+    if(s) list=[s];
+  }
+  if(!list.length) return "";
+  list.sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:"base"}));
+  return list.join(", ");
+}
+
 function renderDirectory(){
   // Alphabetical sorting:
   // 1. Remove titles such as Dr., Mr., Ms., Mrs., Prof., Lt. Dr.
@@ -1747,6 +1905,19 @@ function renderDirectory(){
     if(sort==="country"){
       return String(a.country||"").localeCompare(
         String(b.country||""),
+        undefined,
+        {sensitivity:"base"}
+      );
+    }
+
+    if(sort==="expertise"){
+      const expA=getNormalizedExpertise(a.expertise);
+      const expB=getNormalizedExpertise(b.expertise);
+      if(!expA&&!expB) return 0;
+      if(!expA) return 1;
+      if(!expB) return -1;
+      return expA.localeCompare(
+        expB,
         undefined,
         {sensitivity:"base"}
       );
