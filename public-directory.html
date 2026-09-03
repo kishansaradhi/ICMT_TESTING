@@ -832,8 +832,8 @@ button{cursor:pointer}
 </footer>
 
 <!-- Load Master Data File -->
-<script src="js/member-data.js"></script>
 
+<script src="js/api.js"></script>
 <script>
 let currentViewMode = "grid";
 let allMembers = [];
@@ -895,18 +895,6 @@ function normalizeNameForAZ(value){
 }
 
 function loadFacultyData(){
-  try {
-    const raw = localStorage.getItem("icmtFacultyDirectoryMembers_v4");
-    if(raw){
-      const parsed = JSON.parse(raw);
-      if(Array.isArray(parsed) && parsed.length > 0){
-        return parsed;
-      }
-    }
-  } catch(e){}
-  if(window.ICMT_MASTER_DATA && Array.isArray(window.ICMT_MASTER_DATA) && window.ICMT_MASTER_DATA.length > 0){
-    return window.ICMT_MASTER_DATA;
-  }
   return [];
 }
 
@@ -1184,29 +1172,30 @@ document.addEventListener("keydown", e => {
   if(e.key === "Escape") closeProfileModal();
 });
 
-function initPublicDirectory(){
-  allMembers = loadFacultyData();
+async function initPublicDirectory(){
+  allMembers = await loadMembersFromBackend();
+
+  console.log("Backend members loaded:", allMembers.length);
+
   initFilters();
   renderFacultyDirectory();
 }
 
-if(document.readyState === "loading"){
-  document.addEventListener("DOMContentLoaded", initPublicDirectory);
+if (document.readyState === "loading") {
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initPublicDirectory().catch(error => {
+      console.error("Directory initialization failed:", error);
+    });
+  });
+
 } else {
-  initPublicDirectory();
+
+  initPublicDirectory().catch(error => {
+    console.error("Directory initialization failed:", error);
+  });
+
 }
-
-window.addEventListener("focus", function(){
-  allMembers = loadFacultyData();
-  renderFacultyDirectory();
-});
-
-window.addEventListener("storage", function(e){
-  if(e.key === "icmtFacultyDirectoryMembers_v4"){
-    allMembers = loadFacultyData();
-    renderFacultyDirectory();
-  }
-});
 </script>
 </body>
 </html>

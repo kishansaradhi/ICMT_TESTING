@@ -1154,6 +1154,46 @@ function loadMembers(){
     return [];
   }
 }
+async function loadMembersFromBackend() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/api/members`);
+
+        if (!response.ok) {
+            throw new Error(`Failed to load members: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (!result.success || !Array.isArray(result.data)) {
+            throw new Error("Invalid members API response");
+        }
+
+        return result.data.map(member => ({
+            id: member.member_id,
+            name: member.name,
+            qualification: member.qualification,
+            designation: member.designation,
+            department: member.department,
+            college: member.institution,
+            city: member.city,
+            state: member.state_province,
+            country: member.country,
+            expertise: member.expertise,
+            photo: member.photo_url,
+
+            // Keep these available for existing frontend code
+            guideship: member.guideship || "",
+            researchSupervisor: member.researchSupervisor || "",
+            collegeAddress: member.collegeAddress || "",
+            mobile: member.mobile || "",
+            professionalEmail: member.professionalEmail || "",
+            personalEmail: member.personalEmail || ""
+        }));
+    } catch (error) {
+        console.error("Backend member loading failed:", error);
+        return [];
+    }
+}
 
 function loadUsers(){
   try{
@@ -1229,15 +1269,48 @@ function removeAdminSidebarButtons(){
   if(profileBtn) profileBtn.remove();
 }
 
-function login(){
-  members=loadMembers();
-  removeAdminSidebarButtons();
-  $("login").classList.add("hidden");
-  $("public").classList.add("hidden");
-  $("app").classList.remove("hidden");
-  updateDashboard();
-  renderUsers();
-  showPage("dashboard");
+async function login(){
+
+  try {
+
+    const user_id = $("loginEmail").value.trim();
+    const password = $("loginPassword").value;
+
+    if(!user_id || !password){
+      alert("Please enter your user ID and password.");
+      return;
+    }
+
+    const result = await adminLogin(user_id, password);
+
+    localStorage.setItem("icmtAdminToken", result.token);
+
+    members = await loadMembersFromBackend();
+
+    console.log("Admin backend members loaded:", members.length);
+
+    removeAdminSidebarButtons();
+
+    $("login").classList.add("hidden");
+
+    $("public").classList.add("hidden");
+
+    $("app").classList.remove("hidden");
+
+    updateDashboard();
+
+    renderUsers();
+
+    showPage("dashboard");
+
+  } catch(error) {
+
+    console.error("Admin login failed:", error);
+
+    alert(error.message || "Login failed.");
+
+  }
+
 }
 
 function logout(){
@@ -1381,7 +1454,7 @@ function buildRecord(form,existing){
     ...data,
     id:String(existing?.id||nextId()).trim().toUpperCase(),
     name:((data.title||"")+" "+name).trim(),
-    photo:photoData || existing?.photo || ""
+    photo: existing?.photo || ""
   };
 }
 
@@ -1402,102 +1475,118 @@ function resetEntryForm(){
   editingMemberId=null;
 }
 
-function handleAdminSubmit(event){
+async function handleAdminSubmit(event){
   event.preventDefault();
+
   if(saving) return;
-  saving=true;
+  saving = true;
 
   try{
-    const form=event.currentTarget;
-    const existingId=editingMemberId;
-    const existing=existingId ? members.find(m=>String(m.id)===String(existingId)) : null;
+    const form = event.currentTarget;
+    const existingId = editingMemberId;
+    const existing = existingId
+      ? members.find(m => String(m.id) === String(existingId))
+      : null;
 
     if(existingId && !existing){
       alert("Member record not found.");
       return;
     }
 
-    const record=buildRecord(form,existing);
+    const record = buildRecord(form, existing);
+
     if(!normalize(record.name)){
       alert("Please enter the member name.");
       return;
     }
 
-    if(!validateMemberId(record.id,existingId)) return;
-    if(!uniqueCheck(record,existingId)) return;
+    const photoInput = document.getElementById("adminPhotoInput");
+    const photoFile = photoInput?.files?.[0] || null;
 
-    if(existingId){
-      const idx=members.findIndex(m=>String(m.id)===String(existingId));
-      members[idx]=record;
-    }else{
-      members.push(record);
-    }
+    /*
+     * NEW MEMBER
+     * Send the member data + actual photo file
+     * to the backend.
+     */
+    if(!existingId){
 
-    persist();
+      const token = localStorage.getItem("icmtAdminToken");
 
-    const saved=loadMembers().find(m=>String(m.id)===String(record.id));
-    if(!saved) throw new Error("Could not verify saved record.");
+      if(!token){
+        throw new Error("Admin session expired. Please log in again.");
+      }
 
-    members=loadMembers();
-    updateDashboard();
-    renderDirectory();
-    updateDataQuality();
+      const formData = new FormData();
 
-    if(existingId){
-      resetEntryForm();
-      viewProfile(saved.id);
-      toast("Member "+saved.id+" updated successfully.");
-    }else{
+      formData.append("name", record.name);
+      formData.append("qualification", record.qualification || "");
+      formData.append("designation", record.designation || "");
+      formData.append("department", record.department || "");
+      formData.append("institution", record.college || "");
+      formData.append("city", record.city || "");
+      formData.append("state_province", record.state || "");
+      formData.append("country", record.country || "");
+      formData.append("expertise", record.expertise || "");
+      formData.append("mobile", record.mobile || "");
+      formData.append("professional_email", record.professionalEmail || "");
+      formData.append("personal_email", record.personalEmail || "");
+      formData.append("research_guideship", record.guideship || "");
+
+      if(photoFile){
+        formData.append("photo", photoFile);
+      }
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/admin/members`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          },
+          body: formData
+        }
+      );
+
+      const result = await response.json();
+
+      if(!response.ok || !result.success){
+        throw new Error(result.error || "Could not save member.");
+      }
+
+      const saved = result.data;
+
+      console.log("Member created in backend:", saved);
+      console.log("Photo URL:", saved.photo_url);
+
+      members = await loadMembersFromBackend();
+
+      updateDashboard();
+      renderDirectory();
+      updateDataQuality();
+
       resetEntryForm();
       showPage("management");
-      toast("Member saved successfully — "+saved.id);
-    }
-  }catch(e){
-    console.error(e);
-    alert("The member details could not be saved.");
-  }finally{
-    setTimeout(()=>saving=false,250);
-  }
-}
 
-function handlePublicSubmit(event){
-  event.preventDefault();
-  if(saving) return;
-  saving=true;
+      toast("Member saved successfully — " + saved.member_id);
 
-  try{
-    const form=event.currentTarget;
-    const record=buildRecord(form,null);
-
-    if(!normalize(record.name)){
-      alert("Please enter the member name.");
       return;
     }
 
-    if(!uniqueCheck(record,null)) return;
+    /*
+     * EXISTING MEMBER
+     * Leave Edit handling alone for now.
+     */
+    alert("Photo/Create connection is ready for new members. Edit will be connected separately.");
 
-    members.push(record);
-    persist();
-    members=loadMembers();
-
-    const saved=members.find(m=>String(m.id)===String(record.id));
-    if(!saved) throw new Error("Could not verify saved record.");
-
-    form.reset();
-    photoData="";
-    const preview=$("publicPhoto");
-    if(preview) preview.innerHTML="Photo preview";
-
-    updateDashboard();
-    renderDirectory();
-
-    alert("Registration submitted successfully.\nUnique Member ID: "+saved.id);
-    backLogin();
   }catch(e){
-    console.error(e);
-    alert("The registration could not be saved.");
+
+    console.error("Member save failed:", e);
+    alert(e.message || "The member details could not be saved.");
+
   }finally{
-    setTimeout(()=>saving=false,250);
+
+    setTimeout(() => saving = false, 250);
+
   }
 }
 
