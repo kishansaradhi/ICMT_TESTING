@@ -1026,15 +1026,15 @@ function renderFacultyDirectory(){
 
       return `
         <div class="faculty-card">
-          <div class="avatar-wrap" onclick="openProfileModal('${esc(m.id)}')" title="View profile of ${esc(m.name)}">
+          <div class="avatar-wrap" onclick="window.location.href='membership.html'" title="Become a member to view full profile">
             ${avatar}
           </div>
           <div class="faculty-name-wrap">
             <h3 class="faculty-name" title="${esc(m.name)}">
-              <a href="javascript:void(0)" onclick="openProfileModal('${esc(m.id)}')">${esc(m.name || "Member")}</a>
+              <a href="membership.html">${esc(m.name || "Member")}</a>
             </h3>
           </div>
-          <a href="javascript:void(0)" class="photo-profile-link" onclick="openProfileModal('${esc(m.id)}')">
+          <a href="membership.html" class="photo-profile-link">
             View Profile &rarr;
           </a>
         </div>
@@ -1054,18 +1054,18 @@ function renderFacultyDirectory(){
         <tr>
           <td>
             <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-              <div style="cursor:pointer" onclick="openProfileModal('${esc(m.id)}')" title="View profile">${avatar}</div>
-              <a href="javascript:void(0)" class="photo-profile-link" style="font-size:10px;padding:3px 8px" onclick="openProfileModal('${esc(m.id)}')">Profile</a>
+              <div style="cursor:pointer" onclick="window.location.href='membership.html'" title="Become a member to view full profile">${avatar}</div>
+              <a href="membership.html" class="photo-profile-link" style="font-size:10px;padding:3px 8px">Profile</a>
             </div>
           </td>
           <td><b>${esc(m.id)}</b></td>
-          <td><a href="javascript:void(0)" style="font-weight:700;color:var(--navy)" onclick="openProfileModal('${esc(m.id)}')">${esc(m.name)}</a></td>
+          <td><a href="membership.html" style="font-weight:700;color:var(--navy)">${esc(m.name)}</a></td>
           <td>${esc(m.designation || "—")}</td>
           <td>${esc(m.department || "—")}</td>
           <td>${esc(m.college || "—")}</td>
           <td>${esc(location)}</td>
           <td>
-            <button class="btn btn-secondary" style="font-size:12px;padding:6px 12px" type="button" onclick="openProfileModal('${esc(m.id)}')">View</button>
+            <a href="membership.html" class="btn btn-secondary" style="font-size:12px;padding:6px 12px;text-decoration:none">View</a>
           </td>
         </tr>
       `;
@@ -1074,86 +1074,7 @@ function renderFacultyDirectory(){
 }
 
 function openProfileModal(id){
-  const member = allMembers.find(m => String(m.id) === String(id));
-  if(!member) return;
-
-  const content = document.getElementById("profileModalContent");
-  const modal = document.getElementById("profileModal");
-
-  const isB64 = member.photo && member.photo.startsWith("data:");
-  const b64Class = isB64 ? "avatar-b64-photo" : "";
-  const avatar = member.photo
-    ? `<img class="${b64Class}" src="${member.photo}" alt="${esc(member.name)}" onerror="handleImgError(this, '${esc(member.name)}', 'modal')">`
-    : `<div class="profile-photo-placeholder">${esc(initials(member.name))}</div>`;
-
-  const expList = Array.isArray(member.expertise)
-    ? member.expertise
-    : String(member.expertise || "").split(",").map(x => x.trim()).filter(Boolean);
-
-  const guideList = String(member.guideship || member.researchSupervisor || "").split(",").map(x => x.trim()).filter(Boolean);
-
-  content.innerHTML = `
-    <div class="profile-layout">
-      <div>
-        <div class="profile-photo-box">${avatar}</div>
-      </div>
-      <div class="profile-details">
-        <span class="id-badge" style="font-size:12px;padding:3px 10px;margin-bottom:6px">${esc(member.id)}</span>
-        <h2>${esc(member.name)}</h2>
-        <div class="profile-sub">${esc(member.designation || "Member")} &bull; ${esc(member.qualification || "Academician")}</div>
-
-        <div class="profile-info-grid">
-          <div class="profile-info-item">
-            <div class="profile-label">Department</div>
-            <div class="profile-val">${esc(member.department || "Not specified")}</div>
-          </div>
-          <div class="profile-info-item">
-            <div class="profile-label">Institution / Organization</div>
-            <div class="profile-val">${esc(member.college || "Not specified")}</div>
-          </div>
-          <div class="profile-info-item">
-            <div class="profile-label">City & State</div>
-            <div class="profile-val">${esc([member.city, member.state].filter(Boolean).join(", ") || "Not specified")}</div>
-          </div>
-          <div class="profile-info-item">
-            <div class="profile-label">Country</div>
-            <div class="profile-val">${esc(member.country || "India")}</div>
-          </div>
-
-          ${member.collegeAddress ? `
-            <div class="profile-info-item full">
-              <div class="profile-label">Campus Address</div>
-              <div class="profile-val">${esc(member.collegeAddress)}</div>
-            </div>
-          ` : ""}
-
-          ${guideList.length ? `
-            <div class="profile-info-item full">
-              <div class="profile-label">Research Guideship & Supervision</div>
-              <div class="profile-chips">
-                ${guideList.map(g => `<span class="profile-chip" style="background:#eaf7f0;color:#1d754e">${esc(g)}</span>`).join("")}
-              </div>
-            </div>
-          ` : ""}
-
-          ${expList.length ? `
-            <div class="profile-info-item full">
-              <div class="profile-label">Areas of Specialization & Expertise</div>
-              <div class="profile-chips">
-                ${expList.map(e => `<span class="profile-chip">${esc(e)}</span>`).join("")}
-              </div>
-            </div>
-          ` : ""}
-        </div>
-        <div style="margin-top:14px">
-          <a href="member-profile.html?id=${esc(member.id)}" class="btn btn-secondary" style="font-size:12px;display:inline-flex;align-items:center;gap:6px">Open Full Profile Page &rarr;</a>
-        </div>
-      </div>
-    </div>
-  `;
-
-  modal.style.display = "flex";
-  document.body.style.overflow = "hidden";
+  window.location.href = "membership.html";
 }
 
 function closeProfileModal(){

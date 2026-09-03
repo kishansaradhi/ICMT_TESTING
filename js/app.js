@@ -1782,7 +1782,7 @@ function renderDirectory(){
       +'<td class="cell-institution">'+esc(m.college||"Not specified")+'</td>'
       +'<td class="cell-city">'+esc(m.city||"Not specified")+'</td>'
       +'<td class="cell-state">'+esc(m.state||"Not specified")+'</td>'
-      +'<td class="cell-action"><button class="btn secondary directory-view-btn" type="button" data-member-id="'+memberId+'">View</button></td>'
+      +'<td class="cell-action"><button class="btn secondary directory-view-btn" type="button" data-member-id="'+memberId+'" onclick="window.location.href=\'membership.html\'">View</button></td>'
       +'</tr>';
   }).join("");
 }
@@ -2102,8 +2102,7 @@ function resetEntryMode(){
 document.addEventListener("click",function(event){
   const button=event.target.closest(".directory-view-btn");
   if(!button) return;
-  const id=button.getAttribute("data-member-id");
-  if(id) viewProfile(id);
+  window.location.href="membership.html";
 });
 function handlePublicSubmit(event){
   event.preventDefault();
