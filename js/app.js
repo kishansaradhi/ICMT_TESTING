@@ -2105,7 +2105,49 @@ document.addEventListener("click",function(event){
   const id=button.getAttribute("data-member-id");
   if(id) viewProfile(id);
 });
+function handlePublicSubmit(event){
+  event.preventDefault();
+  if(saving) return;
+  saving=true;
 
+  try{
+    const form=event.currentTarget;
+    const record=buildRecord(form,null);
+
+    if(!normalize(record.name)){
+      alert("Please enter the member name.");
+      return;
+    }
+
+    if(!uniqueCheck(record,null)) return;
+
+    members.push(record);
+    persist();
+    members=loadMembers();
+
+    const saved=members.find(m=>String(m.id)===String(record.id));
+    if(!saved) throw new Error("Could not verify saved record.");
+
+    form.reset();
+    photoData="";
+
+    const preview=$("publicPhoto");
+    if(preview) preview.innerHTML="Photo preview";
+
+    updateDashboard();
+    renderDirectory();
+
+    alert("Registration submitted successfully.\nUnique Member ID: "+saved.id);
+    backLogin();
+
+  }catch(e){
+    console.error(e);
+    alert("The registration could not be saved.");
+
+  }finally{
+    setTimeout(()=>saving=false,250);
+  }
+}
 document.addEventListener("DOMContentLoaded",()=>{
   const publicForm=$("publicForm");
   if(publicForm) publicForm.addEventListener("submit",handlePublicSubmit);
