@@ -514,9 +514,10 @@ function loadMemberProfile(){
 
   const isB64 = member.photo && member.photo.startsWith("data:");
   const b64Class = isB64 ? "avatar-b64-photo" : "";
+  const initialText = esc(initials(member.name));
   const avatar = member.photo
-    ? `<img class="${b64Class}" src="${member.photo}" alt="${esc(member.name)}">`
-    : `<div class="profile-photo-placeholder">${esc(initials(member.name))}</div>`;
+    ? `<img class="${b64Class}" src="${member.photo}" alt="${esc(member.name)}" onerror="this.onerror=null;this.parentElement.innerHTML='<div class=\\'profile-photo-placeholder\\'>${initialText}</div>'">`
+    : `<div class="profile-photo-placeholder">${initialText}</div>`;
 
   const expList = Array.isArray(member.expertise)
     ? member.expertise
