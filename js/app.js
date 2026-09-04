@@ -1454,6 +1454,8 @@ async function login(){
 }
 
 function logout(){
+  if($("loginEmail")) $("loginEmail").value = "";
+  if($("loginPassword")) $("loginPassword").value = "";
   $("app").classList.add("hidden");
   $("public").classList.add("hidden");
   $("login").classList.remove("hidden");
