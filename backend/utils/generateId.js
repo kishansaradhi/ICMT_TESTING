@@ -1,12 +1,29 @@
 const supabase = require("../config/supabaseClient");
 
-// Asks Postgres for the next member_id via the icmt_member_id_seq sequence.
-// Safe under concurrency — the DB guarantees no two callers ever get the
-// same value, unlike computing "max + 1" in JavaScript.
 async function generateNextMemberId() {
-  const { data, error } = await supabase.rpc("next_member_id");
-  if (error) throw error;
-  return data; // e.g. "ICMT381"
+  // Fetch all existing member IDs
+  const { data, error } = await supabase
+      .from("icmt_members")
+      .select("member_id");
+  if (error) {
+    throw new Error(`Failed to read existing member IDs: ${error.message}`);
+  }
+  let maxIdNum = 0;
+  if (data && data.length > 0) {
+    for (const row of data) {
+      if (row.member_id) {
+        // Strip out non-numeric characters (e.g. "ICMT186" -> 186)
+        const numericPart = parseInt(row.member_id.replace(/\D/g, ""), 10);
+        if (!isNaN(numericPart) && numericPart > maxIdNum) {
+          maxIdNum = numericPart;
+        }
+      }
+    }
+  }
+  // Next sequential number
+  const nextNum = maxIdNum + 1;
+  // Formats as ICMT001, ICMT042, ICMT187, etc. (minimum 3 digits padding)
+  return `ICMT${String(nextNum).padStart(3, "0")}`;
 }
 
 module.exports = { generateNextMemberId };

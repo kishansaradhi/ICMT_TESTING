@@ -1068,7 +1068,7 @@ function renderManagement(){
   }).join("");
 }
 
-function deleteMember(id){
+async function deleteMember(id){
   const member = members.find(m => String(m.id).toUpperCase() === String(id).toUpperCase());
   if(!member){
     showToast("Member record not found.");
@@ -1076,14 +1076,33 @@ function deleteMember(id){
   }
   const confirmed = confirm("Are you sure you want to permanently delete member " + member.id + " (" + member.name + ")?");
   if(!confirmed) return;
-
-  members = members.filter(m => String(m.id).toUpperCase() !== String(id).toUpperCase());
-  persist();
-  members = loadMembers();
-  updateDashboard();
-  renderManagement();
-  updateDataQuality();
-  showToast("Member " + id + " deleted successfully.");
+  const token = localStorage.getItem("icmtAdminToken");
+  if(!token){
+    alert("Admin session expired. Please log in again.");
+    return;
+  }
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/admin/members/${encodeURIComponent(member.id)}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`
+      }
+    });
+    const result = await response.json();
+    if(!response.ok || !result.success){
+      throw new Error(result.error || "Failed to delete member.");
+    }
+    // Pull the fresh table directly from the database
+    members = await loadMembersFromBackend();
+    persist();
+    updateDashboard();
+    renderManagement();
+    updateDataQuality();
+    showToast("Member " + id + " permanently deleted from database.");
+  } catch(err) {
+    console.error("Delete failed:", err);
+    alert(err.message || "Failed to delete member.");
+  }
 }
 
 function editMember(id){
