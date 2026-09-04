@@ -86,16 +86,17 @@ button{cursor:pointer}
   flex-shrink:0;
 }
 .brand-logo{
-  height:54px;
-  width:54px;
+  height:76px;
+  width:76px;
   aspect-ratio:1/1;
   object-fit:contain;
   border-radius:50%;
   background:#ffffff;
-  padding:2px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.18);
+  padding:3px;
+  box-shadow:0 3px 10px rgba(0,0,0,0.22);
   flex-shrink:0;
   transition:transform .2s ease;
+  image-rendering:-webkit-optimize-contrast;
 }
 .brand:hover .brand-logo{
   transform:scale(1.05);
@@ -560,15 +561,17 @@ button{cursor:pointer}
   gap:14px;
 }
 .footer-logo{
-  height:60px;
-  width:60px;
+  height:82px;
+  width:82px;
   aspect-ratio:1/1;
   object-fit:contain;
   border-radius:50%;
   background:#ffffff;
-  padding:2px;
+  padding:3px;
   border:1px solid #dfe6ee;
+  box-shadow:0 3px 10px rgba(0,0,0,0.08);
   flex-shrink:0;
+  image-rendering:-webkit-optimize-contrast;
 }
 .footer-brand b{
   font-size:14.5px;
@@ -692,7 +695,7 @@ textarea{min-height:82px;resize:vertical}
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 .sidebar-header {
-  background-color: #1e6c93; /* ICMT Primary Blue */
+  background-color: #1e6c93; /* ICMTA Primary Blue */
   color: #ffffff;
   padding: 15px 20px;
   font-size: 18px;
@@ -721,7 +724,7 @@ textarea{min-height:82px;resize:vertical}
   border-left: 4px solid transparent;
 }
 .aima-sidebar-menu a:hover, .aima-sidebar-menu a.active {
-  background-color: #f8fafc; /* ICMT Light Background */
+  background-color: #f8fafc; /* ICMTA Light Background */
   color: #1e6c93;
   border-left-color: #1e6c93;
 }
@@ -758,7 +761,7 @@ textarea{min-height:82px;resize:vertical}
   margin: 25px 0;
 }
 .aima-highlight-box.mission {
-  border-left-color: #21865b; /* ICMT Green */
+  border-left-color: #21865b; /* ICMTA Green */
 }
 .aima-highlight-box h3 {
   margin-top: 0;

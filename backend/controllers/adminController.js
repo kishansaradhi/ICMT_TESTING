@@ -7,7 +7,7 @@ const {
 } = require("../utils/memberStats");
 
 async function fetchAllMembers() {
-  const { data, error } = await supabase.from("icmt_members").select("*");
+  const { data, error } = await supabase.from("ICMTA_members").select("*");
   if (error) throw error;
   return data;
 }
@@ -74,7 +74,7 @@ async function getIncompleteProfiles(req, res) {
 async function getMemberById(req, res) {
   const { id } = req.params;
   const { data, error } = await supabase
-    .from("icmt_members")
+    .from("ICMTA_members")
     .select("*")
     .eq("member_id", id)
     .maybeSingle();
@@ -99,14 +99,14 @@ async function createMember(req, res) {
 
   if (record.professional_email) {
     const { data: clash } = await supabase
-      .from("icmt_members").select("member_id")
+      .from("ICMTA_members").select("member_id")
       .eq("professional_email", record.professional_email).maybeSingle();
     if (clash) return res.status(409).json({ success: false, error: "Professional email already registered." });
   }
 
   if (record.mobile) {
     const { data: clash } = await supabase
-      .from("icmt_members").select("member_id")
+      .from("ICMTA_members").select("member_id")
       .eq("mobile", record.mobile).maybeSingle();
     if (clash) return res.status(409).json({ success: false, error: "Mobile number already registered." });
   }
@@ -129,7 +129,7 @@ async function createMember(req, res) {
   }
 
   const { data, error } = await supabase
-    .from("icmt_members")
+    .from("ICMTA_members")
     .insert(record)
     .select()
     .maybeSingle();
@@ -150,7 +150,7 @@ async function updateMember(req, res) {
   delete updates.photo_url; // never trust client-sent value, set below if a file is present
 
   const { data: existing, error: findErr } = await supabase
-    .from("icmt_members")
+    .from("ICMTA_members")
     .select("*")
     .eq("member_id", id)
     .maybeSingle();
@@ -160,7 +160,7 @@ async function updateMember(req, res) {
 
   if (updates.professional_email) {
     const { data: clash } = await supabase
-      .from("icmt_members").select("member_id")
+      .from("ICMTA_members").select("member_id")
       .eq("professional_email", updates.professional_email)
       .neq("member_id", id).maybeSingle();
     if (clash) return res.status(409).json({ success: false, error: "Professional email already registered to another member." });
@@ -168,7 +168,7 @@ async function updateMember(req, res) {
 
   if (updates.mobile) {
     const { data: clash } = await supabase
-      .from("icmt_members").select("member_id")
+      .from("ICMTA_members").select("member_id")
       .eq("mobile", updates.mobile)
       .neq("member_id", id).maybeSingle();
     if (clash) return res.status(409).json({ success: false, error: "Mobile number already registered to another member." });
@@ -184,7 +184,7 @@ async function updateMember(req, res) {
   }
 
   const { data, error } = await supabase
-    .from("icmt_members")
+    .from("ICMTA_members")
     .update(updates)
     .eq("member_id", id)
     .select()
@@ -202,7 +202,7 @@ async function deleteMember(req, res) {
   const { id } = req.params;
 
   const { data: existing, error: findErr } = await supabase
-    .from("icmt_members")
+    .from("ICMTA_members")
     .select("member_id, photo_url")
     .eq("member_id", id)
     .maybeSingle();
@@ -210,7 +210,7 @@ async function deleteMember(req, res) {
   if (findErr) return res.status(500).json({ success: false, error: findErr.message });
   if (!existing) return res.status(404).json({ success: false, error: "Member not found." });
 
-  const { error } = await supabase.from("icmt_members").delete().eq("member_id", id);
+  const { error } = await supabase.from("ICMTA_members").delete().eq("member_id", id);
   if (error) return res.status(500).json({ success: false, error: error.message });
 
   await deletePhotoByUrl(existing.photo_url);

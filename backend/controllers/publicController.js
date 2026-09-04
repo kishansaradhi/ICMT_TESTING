@@ -3,7 +3,7 @@ const { PUBLIC_FIELDS } = require("../utils/memberStats");
 
 async function getMembers(req, res) {
   const { data, error } = await supabase
-    .from("icmt_members")
+    .from("ICMTA_members")
     .select(PUBLIC_FIELDS.join(","));
 
   if (error) return res.status(500).json({ success: false, error: error.message });
