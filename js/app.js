@@ -1,16 +1,16 @@
-const MEMBER_STORE_KEY = "icmtFacultyDirectoryMembers_v4";
-const USER_STORE_KEY = "icmtFacultyDirectoryUsers_v4";
+const MEMBER_STORE_KEY = "ICMTAFacultyDirectoryMembers_v4";
+const USER_STORE_KEY = "ICMTAFacultyDirectoryUsers_v4";
 const MEMBER_DATA_VERSION = "combined-343-members-restored-v5";
 try {
-  const savedVersion = localStorage.getItem("icmtFacultyDirectoryDataVersion");
-  const master = window.ICMT_MASTER_DATA || [];
+  const savedVersion = localStorage.getItem("ICMTAFacultyDirectoryDataVersion");
+  const master = window.ICMTA_MASTER_DATA || [];
   if (savedVersion !== MEMBER_DATA_VERSION) {
     localStorage.setItem(MEMBER_STORE_KEY, JSON.stringify(master));
-    localStorage.setItem("icmtFacultyDirectoryDataVersion", MEMBER_DATA_VERSION);
+    localStorage.setItem("ICMTAFacultyDirectoryDataVersion", MEMBER_DATA_VERSION);
   }
 } catch(e) {
-  localStorage.setItem(MEMBER_STORE_KEY, JSON.stringify(window.ICMT_MASTER_DATA || []));
-  localStorage.setItem("icmtFacultyDirectoryDataVersion", MEMBER_DATA_VERSION);
+  localStorage.setItem(MEMBER_STORE_KEY, JSON.stringify(window.ICMTA_MASTER_DATA || []));
+  localStorage.setItem("ICMTAFacultyDirectoryDataVersion", MEMBER_DATA_VERSION);
 }
 
 let members = loadMembers();
@@ -29,7 +29,7 @@ function getPrototypeRole(){
 
 function setPrototypeRole(role){
   prototypeRole = ["public","member","admin"].includes(role) ? role : "public";
-  try{ localStorage.setItem("icmtPrototypeRole", prototypeRole); }catch(e){}
+  try{ localStorage.setItem("ICMTAPrototypeRole", prototypeRole); }catch(e){}
   applyRoleAccess();
   if(typeof renderManagement==="function" && document.getElementById("management")?.classList.contains("active")){
     renderManagement();
@@ -389,7 +389,7 @@ function normalizeImportHeader(v){
   return String(v||"").trim().toLowerCase().replace(/[\s_\-\/]+/g,"").replace(/[()]/g,"");
 }
 const importFieldAliases={
- id:["id","memberid","icmtid","uniqueid","facultyid"],
+ id:["id","memberid","ICMTAid","uniqueid","facultyid"],
  name:["name","membername","facultyname","fullname","facultymember"],
  qualification:["qualification","qualifications","degree"],
  designation:["designation","position","role"],
@@ -440,7 +440,7 @@ function generateImportNextId(currentMembers, allocatedIds){
     const n=parseInt(String(id).replace(/\D/g,""),10);
     if(Number.isFinite(n)) max=Math.max(max,n);
   }
-  return "ICMT"+String(max+1).padStart(3,"0");
+  return "ICMTA"+String(max+1).padStart(3,"0");
 }
 
 function handleImportFile(input){
@@ -605,7 +605,7 @@ function processImportRows(rows){
       });
     } else {
       // Allocate clean unique sequential ID without collisions
-      if(!rawId || !/^ICMT\d{3,}$/.test(rawId) || members.some(m => String(m.id).toUpperCase() === rawId) || allocatedIds.has(rawId)){
+      if(!rawId || !/^ICMTA\d{3,}$/.test(rawId) || members.some(m => String(m.id).toUpperCase() === rawId) || allocatedIds.has(rawId)){
         r.id = generateImportNextId(members, allocatedIds);
       } else {
         r.id = rawId;
@@ -755,11 +755,11 @@ function matchPhotoToMember(filename, memberList) {
   const raw = String(filename).replace(/\\/g, '/');
   const base = raw.split('/').pop().replace(/\.[^/.]+$/, '');
   
-  // 1. Explicit ICMT ID in filename (e.g. ICMT107.jpg, ICMT-001.png, ICMT_045.jpeg)
-  const icmtMatch = base.match(/ICMT[\-_]?(\d+)/i);
-  if (icmtMatch) {
-    const num = parseInt(icmtMatch[1], 10);
-    const targetId = 'ICMT' + String(num).padStart(3, '0');
+  // 1. Explicit ICMTA ID in filename (e.g. ICMTA107.jpg, ICMTA-001.png, ICMTA_045.jpeg)
+  const ICMTAMatch = base.match(/ICMTA[\-_]?(\d+)/i);
+  if (ICMTAMatch) {
+    const num = parseInt(ICMTAMatch[1], 10);
+    const targetId = 'ICMTA' + String(num).padStart(3, '0');
     const member = memberList.find(m => String(m.id).toUpperCase() === targetId);
     if (member) {
       return { member, reason: 'Member ID (' + targetId + ')', confidence: 1.0 };
@@ -768,7 +768,7 @@ function matchPhotoToMember(filename, memberList) {
 
   // 2. Extract name part from filename (stripping numeric prefixes like 001_, 123-, etc.)
   let cleanName = base
-    .replace(/^(?:ICMT[\-_]?\d+|\d{1,4})[_\-\s]*/i, '')
+    .replace(/^(?:ICMTA[\-_]?\d+|\d{1,4})[_\-\s]*/i, '')
     .replace(/[_\-]+/g, ' ')
     .trim();
   
@@ -814,7 +814,7 @@ function matchPhotoToMember(filename, memberList) {
   const onlyNumMatch = base.match(/^(\d{1,4})$/);
   if (onlyNumMatch) {
     const num = parseInt(onlyNumMatch[1], 10);
-    const targetId = 'ICMT' + String(num).padStart(3, '0');
+    const targetId = 'ICMTA' + String(num).padStart(3, '0');
     const member = memberList.find(m => String(m.id).toUpperCase() === targetId);
     if (member) {
       return { member, reason: 'Numeric ID fallback (' + targetId + ')', confidence: 0.70 };
@@ -906,7 +906,7 @@ function renderPhotoSyncReview(){
     if(unmatched.length){
       issues.classList.remove("hidden");
       issues.innerHTML = '<b>' + unmatched.length + ' photo' + (unmatched.length === 1 ? '' : 's') + ' could not be auto-matched:</b><ul>' +
-        unmatched.map(x => '<li><b>' + esc(x.filename) + '</b> — rename with faculty name or Member ID (e.g. ICMT107.jpg) to match</li>').join("") +
+        unmatched.map(x => '<li><b>' + esc(x.filename) + '</b> — rename with faculty name or Member ID (e.g. ICMTA107.jpg) to match</li>').join("") +
         '</ul>';
     } else {
       issues.classList.add("hidden");
@@ -975,7 +975,7 @@ function commitPhotoSync(){
 }
 
 function exportUpdatedMemberDataJS(){
-  const content = 'window.ICMT_MASTER_DATA = ' + JSON.stringify(members) + ';\n';
+  const content = 'window.ICMTA_MASTER_DATA = ' + JSON.stringify(members) + ';\n';
   const blob = new Blob([content], { type: 'text/javascript;charset=utf-8' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -1199,7 +1199,7 @@ function exportMembersCSV(){
   const url=URL.createObjectURL(blob);
   const a=document.createElement("a");
   a.href=url;
-  a.download="ICMT_Faculty_Member_Data.csv";
+  a.download="ICMTA_Faculty_Member_Data.csv";
   a.click();
   URL.revokeObjectURL(url);
   showToast("Member data exported as CSV.");
@@ -1263,7 +1263,7 @@ function exportMembersExcel(){
       return {wch:Math.min(Math.max(max+2,12),40)};
     });
 
-    XLSX.writeFile(workbook,"ICMT_Faculty_Member_Data.xlsx");
+    XLSX.writeFile(workbook,"ICMTA_Faculty_Member_Data.xlsx");
     showToast("Member data exported as Excel.");
   });
 }
@@ -1365,7 +1365,7 @@ function dedupeMembers(list){
       .trim()
       .toLowerCase();
 
-    // ICMT source data contains two records for Alok Kumar in older
+    // ICMTA source data contains two records for Alok Kumar in older
     // localStorage versions. Keep the first valid record only.
     if(normalizedName==="alok kumar"){
       if(alokSeen) continue;
@@ -1423,7 +1423,7 @@ async function login(){
 
     const result = await adminLogin(user_id, password);
 
-    localStorage.setItem("icmtAdminToken", result.token);
+    localStorage.setItem("ICMTAdminToken", result.token);
 
     members = await loadMembersFromBackend();
 
@@ -1486,7 +1486,7 @@ function showPage(id,button){
   document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
   const page=$(id);
   if(page) page.classList.add("active");
-  if($("title")) $("title").textContent=pageTitles[id]||"ICMT Faculty Directory";
+  if($("title")) $("title").textContent=pageTitles[id]||"ICMTA Faculty Directory";
   document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
   if(button) button.classList.add("active");
   if(id==="dashboard") updateDashboard();
@@ -1498,10 +1498,10 @@ function showPage(id,button){
 function nextId(){
   let max=0;
   for(const m of members){
-    const n=parseInt(String(m.id||"").replace("ICMT",""),10);
+    const n=parseInt(String(m.id||"").replace("ICMTA",""),10);
     if(Number.isFinite(n)) max=Math.max(max,n);
   }
-  return "ICMT"+String(max+1).padStart(3,"0");
+  return "ICMTA"+String(max+1).padStart(3,"0");
 }
 
 function previewPhoto(input,targetId){
@@ -1572,8 +1572,8 @@ function uniqueCheck(record,excludeId){
 function validateMemberId(id,excludeId){
   const value=String(id||"").trim().toUpperCase();
 
-  if(!/^ICMT\d{3,}$/.test(value)){
-    alert("Invalid Member ID. Use the format ICMT001, ICMT002, ICMT003...");
+  if(!/^ICMTA\d{3,}$/.test(value)){
+    alert("Invalid Member ID. Use the format ICMTA001, ICMTA002, ICMTA003...");
     return false;
   }
 
@@ -1654,7 +1654,7 @@ async function handleAdminSubmit(event){
      */
     if(!existingId){
 
-      const token = localStorage.getItem("icmtAdminToken");
+      const token = localStorage.getItem("ICMTAdminToken");
 
       if(!token){
         throw new Error("Admin session expired. Please log in again.");
@@ -2356,7 +2356,7 @@ if(typeof document!=="undefined" && document.readyState!=="loading"){
 document.addEventListener("DOMContentLoaded", function(){
   removeAdminSidebarButtons();
   try{
-    const saved=localStorage.getItem("icmtPrototypeRole");
+    const saved=localStorage.getItem("ICMTAPrototypeRole");
     if(["public","member","admin"].includes(saved)){
       prototypeRole=saved;
       const select=$("prototypeRole");

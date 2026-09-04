@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ICMT Faculty Directory Automation — Professional Prototype</title>
+<title>ICMTA Faculty Directory Automation — Professional Prototype</title>
 
 
 
@@ -18,8 +18,8 @@
 
 
 
-<meta name="icmt-data-version" content="combined-343-members-v1">
-<meta name="icmt-data-source" content="106 existing prototype members + 237 Final Faculty Data records">
+<meta name="ICMTA-data-version" content="combined-343-members-v1">
+<meta name="ICMTA-data-source" content="106 existing prototype members + 237 Final Faculty Data records">
 
 
 
@@ -27,16 +27,16 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,300;1,400;1,700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
-<!-- <link rel="icon" href="assets/images/icmt-logo.png" type="image/png"> -->
+<!-- <link rel="icon" href="assets/images/ICMTA-logo.png" type="image/png"> -->
 </head>
 <body>
 
 <div id="login" class="login">
 <div class="loginbox">
 <div style="text-align:center;margin-bottom:14px">
-  <img src="assets/images/icmt-logo.png" alt="ICMT Logo" style="height:74px;width:74px;aspect-ratio:1/1;object-fit:contain;border-radius:50%;background:#ffffff;padding:3px;box-shadow:0 4px 12px rgba(0,0,0,0.08);border:1px solid #dfe6ee">
-  <div class="brand" style="justify-content:center;margin-top:10px">ICMT Portal</div>
-  <div class="subtitle">Indian Commerce and Management Teachers • Admin Portal</div>
+  <img src="assets/images/ICMTA-logo.png" alt="ICMTA Logo" style="height:74px;width:74px;aspect-ratio:1/1;object-fit:contain;border-radius:50%;background:#ffffff;padding:3px;box-shadow:0 4px 12px rgba(0,0,0,0.08);border:1px solid #dfe6ee">
+  <div class="brand" style="justify-content:center;margin-top:10px">ICMTA Portal</div>
+  <div class="subtitle">Indian Commerce and Management Teachers Association• Admin Portal</div>
 </div>
 <h2 style="margin-top:18px;font-size:18px;font-weight:700;color:var(--navy)">Administrator Login</h2>
 <form id="loginForm" autocomplete="off" onsubmit="event.preventDefault(); login();">
@@ -48,13 +48,13 @@
 </form>
 <div style="margin-top:16px;text-align:center;display:flex;flex-direction:column;gap:6px">
   <a href="public-directory.html" style="font-size:12px;color:var(--blue);font-weight:600">&larr; Back to Public Faculty Directory</a>
-  <a href="index.html" style="font-size:11px;color:var(--muted)">&larr; ICMT Main Website</a>
+  <a href="index.html" style="font-size:11px;color:var(--muted)">&larr; ICMTA Main Website</a>
 </div>
-<p class="subtitle" style="margin-top:12px;font-size:11px;text-align:center">Authorized ICMT administrative access only.</p>
+<p class="subtitle" style="margin-top:12px;font-size:11px;text-align:center">Authorized ICMTA administrative access only.</p>
 </div></div>
 
 <div id="public" class="public hidden">
-<div class="public-top"><div style="display:flex;align-items:center;gap:12px"><img src="assets/images/icmt-logo.png" alt="ICMT Logo" style="height:52px;width:52px;border-radius:50%;background:#fff;padding:2px;border:1px solid #dfe6ee"><div class="brand-text"><div class="brand">ICMT Faculty Directory</div><div class="subtitle">Member Information Submission</div></div></div><button id="backLoginBtn" class="btn secondary">Admin Login</button></div>
+<div class="public-top"><div style="display:flex;align-items:center;gap:12px"><img src="assets/images/ICMTA-logo.png" alt="ICMTA Logo" style="height:52px;width:52px;border-radius:50%;background:#fff;padding:2px;border:1px solid #dfe6ee"><div class="brand-text"><div class="brand">ICMTA Faculty Directory</div><div class="subtitle">Member Information Submission</div></div></div><button id="backLoginBtn" class="btn secondary">Admin Login</button></div>
 <div class="panel"><h2>Member Registration</h2><div class="notice">Members can submit their own information. The complete member database is not exposed to members.</div>
 <form id="publicForm" class="form">
 <div class="field"><label>Title</label><select name="title"><option>Dr.</option><option>Mr.</option><option>Ms.</option><option>Mrs.</option></select></div>
@@ -82,7 +82,7 @@
 </form></div></div>
 
 <div id="app" class="hidden">
-<aside class="sidebar"><div class="sidebrand" style="display:flex;align-items:center;gap:10px"><img src="assets/images/icmt-logo.png" alt="ICMT Logo" style="height:42px;width:42px;aspect-ratio:1/1;object-fit:contain;border-radius:50%;background:#ffffff;padding:2px;flex-shrink:0"><div>ICMT Portal<span>Faculty Directory & Admin</span></div></div>
+<aside class="sidebar"><div class="sidebrand" style="display:flex;align-items:center;gap:10px"><img src="assets/images/ICMTA-logo.png" alt="ICMTA Logo" style="height:42px;width:42px;aspect-ratio:1/1;object-fit:contain;border-radius:50%;background:#ffffff;padding:2px;flex-shrink:0"><div>ICMTA Portal<span>Faculty Directory & Admin</span></div></div>
 <div style="padding:10px 10px 0;margin-bottom:-12px">
   <a href="public-directory.html" target="_blank" style="display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#a9c4d6;padding:6px 10px;border-radius:6px;background:rgba(255,255,255,0.08);width:100%;transition:all .15s ease">&larr; Public Directory</a>
 </div>
@@ -260,7 +260,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
       <div>
         <h2 style="margin:0">Member Management</h2>
-        <div class="subtitle" style="margin-top:5px">Centralized administration of ICMT member records</div>
+        <div class="subtitle" style="margin-top:5px">Centralized administration of ICMTA member records</div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn secondary" type="button" onclick="openPhotoSyncDialog()">Auto-Link / Upload Photos</button>
@@ -396,7 +396,7 @@
         <input id="bulkPhotoInput" type="file" accept="image/*" multiple onchange="handleBulkPhotoSelect(this)" style="max-width:320px">
         <div id="bulkPhotoCount" class="subtitle" style="margin:0">No files selected</div>
       </div>
-      <div class="help" style="margin-top:6px">Tip: Name photo files with Member ID (e.g. <code>ICMT107.jpg</code> or <code>107_name.png</code>) or Faculty Name (e.g. <code>Dr_Shilpa_Tandon.png</code>).</div>
+      <div class="help" style="margin-top:6px">Tip: Name photo files with Member ID (e.g. <code>ICMTA107.jpg</code> or <code>107_name.png</code>) or Faculty Name (e.g. <code>Dr_Shilpa_Tandon.png</code>).</div>
     </div>
 
     <div id="photoSyncSummary" class="import-summary hidden"></div>

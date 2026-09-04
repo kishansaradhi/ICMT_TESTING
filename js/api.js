@@ -62,7 +62,7 @@ async function adminLogin(user_id, password) {
 }
 async function createMemberInBackend(form) {
 
-    const token = localStorage.getItem("icmtAdminToken");
+    const token = localStorage.getItem("ICMTAdminToken");
 
     if (!token) {
         throw new Error("Admin session expired. Please log in again.");
@@ -128,7 +128,7 @@ async function createMemberInBackend(form) {
 }
 async function uploadMemberPhoto(memberId, file) {
 
-    const token = localStorage.getItem("icmtAdminToken");
+    const token = localStorage.getItem("ICMTAdminToken");
 
     if (!token) {
         throw new Error("Admin session expired. Please log in again.");

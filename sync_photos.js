@@ -1,5 +1,5 @@
 /**
- * ICMT Faculty Directory — Automatic Photo Synchronizer
+ * ICMTA Faculty Directory — Automatic Photo Synchronizer
  *
  * Scans image directories (images/new, images/existing, images) and
  * automatically links each photo file to the respective faculty member
@@ -24,7 +24,7 @@ if (!fs.existsSync(memberDataFile)) {
 // 1. Load current master data
 global.window = {};
 require(memberDataFile);
-const members = global.window.ICMT_MASTER_DATA;
+const members = global.window.ICMTA_MASTER_DATA;
 console.log(`Loaded ${members.length} members from master data.\n`);
 
 function normalizeName(name) {
@@ -41,11 +41,11 @@ function matchPhotoToMember(filename, memberList) {
   const raw = String(filename).replace(/\\/g, '/');
   const base = raw.split('/').pop().replace(/\.[^/.]+$/, '');
   
-  // 1. Explicit ICMT ID in filename (e.g. ICMT107.jpg, ICMT-001.png, ICMT_045.jpeg)
-  const icmtMatch = base.match(/ICMT[\-_]?(\d+)/i);
-  if (icmtMatch) {
-    const num = parseInt(icmtMatch[1], 10);
-    const targetId = 'ICMT' + String(num).padStart(3, '0');
+  // 1. Explicit ICMTA ID in filename (e.g. ICMTA107.jpg, ICMTA-001.png, ICMTA_045.jpeg)
+  const ICMTAMatch = base.match(/ICMTA[\-_]?(\d+)/i);
+  if (ICMTAMatch) {
+    const num = parseInt(ICMTAMatch[1], 10);
+    const targetId = 'ICMTA' + String(num).padStart(3, '0');
     const member = memberList.find(m => String(m.id).toUpperCase() === targetId);
     if (member) {
       return { member, reason: 'Member ID (' + targetId + ')', confidence: 1.0 };
@@ -54,7 +54,7 @@ function matchPhotoToMember(filename, memberList) {
 
   // 2. Extract name part from filename (stripping numeric prefixes like 001_, 123-, etc.)
   let cleanName = base
-    .replace(/^(?:ICMT[\-_]?\d+|\d{1,4})[_\-\s]*/i, '')
+    .replace(/^(?:ICMTA[\-_]?\d+|\d{1,4})[_\-\s]*/i, '')
     .replace(/[_\-]+/g, ' ')
     .trim();
   
@@ -100,7 +100,7 @@ function matchPhotoToMember(filename, memberList) {
   const onlyNumMatch = base.match(/^(\d{1,4})$/);
   if (onlyNumMatch) {
     const num = parseInt(onlyNumMatch[1], 10);
-    const targetId = 'ICMT' + String(num).padStart(3, '0');
+    const targetId = 'ICMTA' + String(num).padStart(3, '0');
     const member = memberList.find(m => String(m.id).toUpperCase() === targetId);
     if (member) {
       return { member, reason: 'Numeric ID fallback (' + targetId + ')', confidence: 0.70 };
@@ -162,7 +162,7 @@ if (unmatched.length > 0) {
 
 if (newlyLinked > 0) {
   // Save updated member-data.js
-  const newContent = 'window.ICMT_MASTER_DATA = ' + JSON.stringify(members) + ';\n';
+  const newContent = 'window.ICMTA_MASTER_DATA = ' + JSON.stringify(members) + ';\n';
   fs.writeFileSync(memberDataFile, newContent, 'utf8');
   console.log('\n✔ Successfully updated js/member-data.js');
 

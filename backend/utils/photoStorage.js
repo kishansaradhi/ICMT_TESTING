@@ -35,7 +35,7 @@ async function deletePhotoByUrl(url) {
 }
 
 // Public URL format:
-// https://xxxx.supabase.co/storage/v1/object/public/member-photos/ICMT001.jpg
+// https://xxxx.supabase.co/storage/v1/object/public/member-photos/ICMTA001.jpg
 function extractPathFromUrl(url) {
   const marker = `/object/public/${BUCKET}/`;
   const idx = url.indexOf(marker);
