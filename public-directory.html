@@ -751,6 +751,8 @@ button{cursor:pointer}
       </select>
 
       <select id="sortSelect" class="toolbar-select" onchange="renderFacultyDirectory()">
+        <option value="id" selected>Sort: Member ID</option>
+        <option value="name">Sort: Name (A–Z)</option>
         <option value="name">Sort: Name (A–Z)</option>
         <option value="id">Sort: Member ID</option>
         <option value="designation">Sort: Designation</option>
@@ -937,6 +939,7 @@ function initFilters(){
 function clearFilters(){
   document.getElementById("searchInput").value = "";
   document.getElementById("stateFilter").value = "";
+  document.getElementById("sortSelect").value = "id";
   document.getElementById("desFilter").value = "";
   document.getElementById("countryFilter").value = "";
   document.getElementById("sortSelect").value = "name";
@@ -970,6 +973,7 @@ function getNormalizedExpertise(exp){
 
 function renderFacultyDirectory(){
   const q = String(document.getElementById("searchInput")?.value || "").trim().toLowerCase();
+  const sort = document.getElementById("sortSelect")?.value || "id";
   const state = document.getElementById("stateFilter")?.value || "";
   const des = document.getElementById("desFilter")?.value || "";
   const country = document.getElementById("countryFilter")?.value || "";
