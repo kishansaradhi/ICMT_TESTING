@@ -753,8 +753,6 @@ button{cursor:pointer}
       <select id="sortSelect" class="toolbar-select" onchange="renderFacultyDirectory()">
         <option value="id" selected>Sort: Member ID</option>
         <option value="name">Sort: Name (A–Z)</option>
-        <option value="name">Sort: Name (A–Z)</option>
-        <option value="id">Sort: Member ID</option>
         <option value="designation">Sort: Designation</option>
         <option value="state">Sort: State</option>
         <option value="country">Sort: Country</option>
@@ -942,8 +940,7 @@ function clearFilters(){
   document.getElementById("sortSelect").value = "id";
   document.getElementById("desFilter").value = "";
   document.getElementById("countryFilter").value = "";
-  document.getElementById("sortSelect").value = "name";
-  renderFacultyDirectory();
+   renderFacultyDirectory();
 }
 
 function setViewMode(mode){
@@ -977,8 +974,6 @@ function renderFacultyDirectory(){
   const state = document.getElementById("stateFilter")?.value || "";
   const des = document.getElementById("desFilter")?.value || "";
   const country = document.getElementById("countryFilter")?.value || "";
-  const sort = document.getElementById("sortSelect")?.value || "name";
-
   const searchIsSingleLetter = /^[a-z]$/i.test(q);
 
   let filtered = allMembers.filter(m => {
